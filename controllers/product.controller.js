@@ -1,8 +1,6 @@
-// controllers/productController.js
-const { default: mongoose } = require("mongoose");
-const { buildCriteria } = require("../helpers/product.helper");
-const Product = require("../models/product.model");
 const User = require("../models/user.model");
+const Product = require("../models/product.model");
+const { buildCriteria } = require("../helpers/product.helper");
 
 // Get products count
 async function getProductsCount(req, res) {
