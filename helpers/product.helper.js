@@ -26,8 +26,6 @@ function buildCriteria(query) {
 
   criteria.categories = { $in: query.categories };
 
-  console.log("query", query);
-
   return criteria;
 }
 
