@@ -1,6 +1,8 @@
 // controllers/productController.js
+const { default: mongoose } = require("mongoose");
 const { buildCriteria } = require("../helpers/product.helper");
 const Product = require("../models/product.model");
+const User = require("../models/user.model");
 
 // Get products count
 async function getProductsCount(req, res) {
@@ -101,7 +103,14 @@ async function createProduct(req, res) {
 
   try {
     const newProduct = new Product(productToAdd);
+    newProduct.user = req.userId; // Add the user id to the product
     const savedProduct = await newProduct.save();
+
+    // Update the user's product array
+    await User.findByIdAndUpdate(req.userId, {
+      $push: { products: savedProduct._id }, // Add the product id to the user's products array
+    });
+
     res.status(201).json(savedProduct);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -116,33 +125,31 @@ async function createProduct(req, res) {
   }
 }
 
-// Update an product
-async function updateProduct(req, res) {
+// Delete a product
+async function deleteProduct(req, res) {
   const { id } = req.params;
-
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const deletedProduct = await Product.findByIdAndDelete(id);
 
-    if (!updatedProduct) {
+    if (!deletedProduct) {
       console.log(
-        `product.controller, updateProduct. Product not found with id: ${id}`
+        `product.controller, deleteProduct. Product not found with id: ${id}`
       );
       return res.status(404).json({ message: "Product not found" });
     }
 
-    res.status(200).json(updatedProduct);
+    // Update the user's product array
+    await User.findByIdAndUpdate(req.userId, {
+      $pull: { products: id }, // Remove the product id from the user's products array
+    });
+
+    res.json({ message: "Product deleted" });
   } catch (err) {
-    if (err.name === "ValidationError") {
-      // Mongoose validation error
-      console.log(`product.controller, updateProduct. ${err.message}`);
-      res.status(400).json({ message: err.message });
-    } else {
-      // Other types of errors
-      console.log(`product.controller, updateProduct. ${err.message}`);
-      res.status(500).json({ message: "Server error while updating product" });
-    }
+    console.log(
+      `product.controller, deleteProduct. Error while deleting product with id: ${id}`,
+      err
+    );
+    res.status(500).json({ message: "Server error while deleting product" });
   }
 }
 
@@ -151,6 +158,5 @@ module.exports = {
   getProducts,
   getProductById,
   createProduct,
-  updateProduct,
   deleteProduct,
 };
