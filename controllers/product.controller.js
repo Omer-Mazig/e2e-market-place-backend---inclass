@@ -35,10 +35,6 @@ async function getProducts(req, res) {
   const limit = query.limit || 5;
   const startIndex = (page - 1) * limit || 0;
 
-  // console.log("page", page);
-  // console.log("limit", limit);
-  // console.log("startIndex", startIndex);
-
   try {
     const products = await Product.find(criteria).skip(startIndex).limit(limit);
     res.status(200).json(products);
