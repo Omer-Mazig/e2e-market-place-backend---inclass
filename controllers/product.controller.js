@@ -93,10 +93,8 @@ async function deleteProduct(req, res) {
 
 // Create a new product
 async function createProduct(req, res) {
-  const productToAdd = req.body;
-
   try {
-    const newProduct = new Product(productToAdd);
+    const newProduct = new Product(req.body);
     newProduct.user = req.userId; // Add the user id to the product
     const savedProduct = await newProduct.save();
 

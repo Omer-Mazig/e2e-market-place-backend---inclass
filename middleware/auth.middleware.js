@@ -5,9 +5,10 @@ const { JWT_SECRET } = process.env;
 
 function verifyToken(req, res, next) {
   // Split the token from the header (Bearer token)
-  const authHeader = req.headers["authorization"]; // Get the authorization header
+  const authHeader =
+    req.headers["Authorization"] || req.headers["authorization"]; // Get the authorization header
   const token = authHeader && authHeader.split(" ")[1]; // Get the token from the header
-
+  console.log(authHeader);
   if (!token) {
     console.log("auth.middleware, verifyToken. No token provided");
     return res.status(401).json({ error: "Access denied" });
@@ -27,8 +28,8 @@ function verifyToken(req, res, next) {
 }
 
 async function authorizeProductOwner(req, res, next) {
-  const { id } = req.params;
-  const product = await Product.findById(id);
+  const { id: productId } = req.params;
+  const product = await Product.findById(productId);
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
